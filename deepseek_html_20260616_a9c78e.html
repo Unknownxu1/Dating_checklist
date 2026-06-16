@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0">
+  <title>关系筛选 · 真心质检评分表</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #f4f0e9;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', sans-serif;
+      color: #2e241f;
+      line-height: 1.6;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .paper {
+      max-width: 900px;
+      width: 100%;
+      background: #fffef9;
+      border-radius: 32px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.07), 0 10px 20px rgba(0,0,0,0.04);
+      padding: 2.5rem 2.2rem;
+      border: 1px solid #e8dfd2;
+    }
+    @media (max-width: 550px) {
+      .paper {
+        padding: 1.8rem 1rem;
+      }
+      body {
+        padding: 1rem 0.5rem;
+      }
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 520;
+      letter-spacing: 2px;
+      color: #3d2e25;
+      border-bottom: 2px dashed #dbccb8;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: #7f7065;
+      margin-bottom: 2rem;
+      font-style: italic;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .instruction {
+      background: #fdf9f2;
+      border-radius: 18px;
+      padding: 1rem 1.4rem;
+      border: 1px solid #e5d9ca;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      color: #4d3b2e;
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+    }
+    .instruction span {
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin: 2rem 0 1rem;
+      color: #4d3c31;
+      border-left: 5px solid #c7a17b;
+      padding-left: 1rem;
+    }
+    .stage-badge {
+      display: inline-block;
+      background: #ddc8ae;
+      color: #2e241f;
+      padding: 0.2rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 650;
+      letter-spacing: 0.5px;
+      margin-left: 0.6rem;
+    }
+
+    .scorecard {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.2rem;
+      margin: 1rem 0 1.8rem;
+    }
+    .criterion {
+      background: #faf7f2;
+      border-radius: 18px;
+      padding: 1.2rem 1.3rem;
+      border: 1px solid #e5d9ca;
+      transition: 0.15s;
+    }
+    .criterion:hover {
+      border-color: #c4ad8f;
+    }
+    .criterion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.7rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .criterion-title {
+      font-weight: 650;
+      font-size: 1.1rem;
+      color: #4a382b;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .score-btns {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .score-btn {
+      border: 1.5px solid #d4bfa3;
+      background: #fffbf6;
+      border-radius: 25px;
+      padding: 0.35rem 1.1rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 550;
+      color: #4d3624;
+      transition: all 0.2s;
+    }
+    .score-btn:hover {
+      background: #e8d7c0;
+      border-color: #b68e68;
+    }
+    .score-btn.selected {
+      background: #4d3624;
+      color: white;
+      border-color: #4d3624;
+    }
+    .score-btn.fail {
+      border-color: #c96b4a;
+      color: #a14930;
+    }
+    .score-btn.fail.selected {
+      background: #c96b4a;
+      color: white;
+      border-color: #c96b4a;
+    }
+    .score-btn.pass {
+      border-color: #6b8c6b;
+      color: #3d5a3d;
+    }
+    .score-btn.pass.selected {
+      background: #6b8c6b;
+      color: white;
+      border-color: #6b8c6b;
+    }
+
+    .evidence-box {
+      margin-top: 0.7rem;
+      font-size: 0.85rem;
+      color: #5f4e3d;
+      background: #fffef9;
+      border-radius: 10px;
+      padding: 0.6rem 0.9rem;
+      border: 1px dashed #ddd0bd;
+      min-height: 2.5rem;
+    }
+    .evidence-box strong {
+      color: #3d2a1b;
+    }
+
+    .score-summary {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      background: #f3ebe0;
+      border-radius: 18px;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      border: 1px solid #cfbb9e;
+      font-weight: 500;
+    }
+    .verdict-box {
+      background: #faf7f2;
+      border-radius: 14px;
+      padding: 0.5rem 1.2rem;
+      font-size: 0.95rem;
+    }
+
+    button {
+      background: none;
+      border: 1px solid #cbb69d;
+      border-radius: 30px;
+      padding: 0.55rem 1.6rem;
+      font-size: 0.88rem;
+      color: #503e2e;
+      cursor: pointer;
+      background: #fdfaf6;
+      transition: 0.2s;
+      margin-top: 0.6rem;
+      font-weight: 500;
+    }
+    button:hover {
+      background: #e8d9c4;
+      border-color: #b58e69;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px dashed #dbcfbe;
+      margin: 2rem 0 1rem;
+    }
+    .footer-note {
+      text-align: right;
+      font-size: 0.82rem;
+      color: #b0a08f;
+      margin-top: 2rem;
+    }
+    .reminder {
+      background: #fff8f0;
+      border-left: 5px solid #c96b4a;
+      border-radius: 0 16px 16px 0;
+      padding: 0.9rem 1.2rem;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+<div class="paper" id="scorecardApp">
+
+  <h1>📋 真心质检评分表</h1>
+  <div class="subtitle">
+    <span>关系筛选工具 · 约会观察清单</span>
+    <span>🧾 基于真实教训校准</span>
+  </div>
+
+  <div class="instruction">
+    <span>💡</span>
+    <span><strong>使用说明：</strong>每次约会后，逐项打分。连续观察3-4次后，统计总分与红灯数。<br>目标不是打分后立刻分手，而是<strong>看清模式，辅助决策</strong>。</span>
+  </div>
+
+  <!-- ========= 阶段一：初期印象 ========= -->
+  <h2>🔎 阶段一：初期印象 <span class="stage-badge">第1-3次约会</span></h2>
+  <div class="scorecard" id="stage1"></div>
+
+  <!-- ========= 阶段二：付出模式 ========= -->
+  <h2>❤️ 阶段二：付出与回应 <span class="stage-badge">确立期观察</span></h2>
+  <div class="scorecard" id="stage2"></div>
+
+  <!-- ========= 阶段三：压力测试 ========= -->
+  <h2>🧪 阶段三：压力测试 <span class="stage-badge">关键关卡</span></h2>
+  <div class="scorecard" id="stage3"></div>
+
+  <!-- ========= 总分面板 ========= -->
+  <div class="score-summary" id="summaryPanel">
+    <span style="font-size:1.8rem;">📊</span>
+    <span style="font-weight:600;">综合总分：<span id="totalScore" style="font-size:1.4rem;">0</span> / <span id="maxScore">36</span></span>
+    <span style="color:#a14930; font-weight:600;">🚨 红灯次数：<span id="redCount" style="font-size:1.3rem;">0</span></span>
+    <span class="verdict-box" id="verdictText">等待评分</span>
+  </div>
+
+  <div class="reminder">
+    <strong>⚠️ 红线终止规则：</strong>以下情况出现任意一条，直接判定不合格，无需继续打分——<br>
+    ① 你表达不适时，对方否认你的感受（“不是挺好的吗”）<br>
+    ② 你提出降级消费，对方暴怒或冷暴力<br>
+    ③ 连续三次约会无任何主动回馈行为<br>
+    ④ 虚构恩情或颠倒黑白（如将你的付出说成她的赏赐）
+  </div>
+
+  <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+    <button onclick="resetAllScores()">🔄 重置全部评分</button>
+    <button onclick="window.print()">🖨️ 打印 / 保存为PDF</button>
+  </div>
+  <div class="footer-note">📌 基于清醒时刻的自我契约 · 筛选优于改变</div>
+
+</div>
+
+<script>
+  // 评分规则定义
+  const criteriaData = [
+    // 阶段一
+    { id: 's1_1', stage:1, title:'💰 买单时的反应', desc:'你请客后，她是否真诚道谢？是否主动提出下次她请，或当场承担小额消费（饮料/电影票）？', redFlag:false },
+    { id: 's1_2', stage:1, title:'🗣️ 聊天话题方向', desc:'她是否对“你这个人”表现出好奇？是否主动问你的生活、感受、喜好？', redFlag:false },
+    { id: 's1_3', stage:1, title:'🚫 被拒绝时的反应', desc:'当你用合理理由拒绝一个小请求（如不能帮她拿东西），她是否平静接受？', redFlag:true },
+    { id: 's1_4', stage:1, title:'📱 线上互动模式', desc:'她是否会主动发起聊天？回复是敷衍的“嗯哦”还是有内容的互动？', redFlag:false },
+    // 阶段二
+    { id: 's2_1', stage:2, title:'🔄 有来有往的执行力', desc:'你付出一次后，她是否在下次约会主动补位（哪怕是小额消费）？不是嘴上说，是实际做。', redFlag:true },
+    { id: 's2_2', stage:2, title:'🎁 对礼物的态度', desc:'收到礼物时是否真诚感谢？她是否会用心为你挑选礼物（哪怕不贵）？', redFlag:false },
+    { id: 's2_3', stage:2, title:'🫂 承接负面情绪的能力', desc:'当你表达累/难受/不舒服时，她的第一反应是关心理解，还是防御反击？', redFlag:true },
+    { id: 's2_4', stage:2, title:'🧹 合作劳动的意愿', desc:'一起做饭/收拾/规划行程时，她是主动分担，还是坐等被你服务？', redFlag:false },
+    // 阶段三
+    { id: 's3_1', stage:3, title:'📉 降级消费测试', desc:'你提出“最近想省点钱，约会简单些或AA”，她的第一反应是理解你，还是考虑自己的损失？', redFlag:true },
+    { id: 's3_2', stage:3, title:'⏳ 对你的耐心程度', desc:'当你因工作/情绪暂时无法陪伴她，她是表示理解，还是抱怨指责？', redFlag:false },
+    { id: 's3_3', stage:3, title:'🔍 对待服务人员的态度', desc:'对餐厅服务员、出租车司机等，她是尊重还是颐指气使？', redFlag:false },
+    { id: 's3_4', stage:3, title:'🧭 长期规划的一致性', desc:'聊到未来时，她的规划是否与你大致同频？是否把你纳入她的生活蓝图？', redFlag:false }
+  ];
+
+  const scoreOptions = [
+    { label:'❌ 0分', value:0, cssClass:'fail' },
+    { label:'⚠️ 1分', value:1, cssClass:'' },
+    { label:'✅ 2分', value:2, cssClass:'pass' },
+    { label:'🌟 3分', value:3, cssClass:'pass' }
+  ];
+
+  let scores = {};
+
+  function buildUI() {
+    const stageContainers = {1: document.getElementById('stage1'), 2: document.getElementById('stage2'), 3: document.getElementById('stage3')};
+    criteriaData.forEach(c => {
+      const container = stageContainers[c.stage];
+      const div = document.createElement('div');
+      div.className = 'criterion';
+      div.id = `crit_${c.id}`;
+
+      let scoreBtnsHTML = '';
+      scoreOptions.forEach(opt => {
+        scoreBtnsHTML += `<button class="score-btn ${opt.cssClass}" data-criterion="${c.id}" data-value="${opt.value}">${opt.label}</button>`;
+      });
+
+      div.innerHTML = `
+        <div class="criterion-header">
+          <span class="criterion-title">${c.redFlag ? '🚨 ' : ''}${c.title}</span>
+          <div class="score-btns" data-group="${c.id}">${scoreBtnsHTML}</div>
+        </div>
+        <div class="evidence-box" id="evidence_${c.id}">
+          <strong>📝 观察记录：</strong><span class="evidence-text">${c.desc}</span>
+        </div>
+      `;
+      container.appendChild(div);
+
+      // 绑定按钮事件
+      const btns = div.querySelectorAll('.score-btn');
+      btns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const criterionId = this.dataset.criterion;
+          const value = parseInt(this.dataset.value);
+          setScore(criterionId, value, div);
+        });
+      });
+    });
+    updateSummary();
+  }
+
+  function setScore(criterionId, value, criterionDiv) {
+    scores[criterionId] = value;
+    // 更新按钮选中状态
+    const allBtns = criterionDiv.querySelectorAll('.score-btn');
+    allBtns.forEach(b => b.classList.remove('selected'));
+    const activeBtn = criterionDiv.querySelector(`.score-btn[data-value="${value}"]`);
+    if (activeBtn) activeBtn.classList.add('selected');
+
+    // 更新证据区
+    const evidenceSpan = criterionDiv.querySelector('.evidence-text');
+    const criterion = criteriaData.find(c => c.id === criterionId);
+    if (evidenceSpan && criterion) {
+      if (value === 0) evidenceSpan.innerHTML = `<span style="color:#a14930;">❌ 红灯：${criterion.desc}</span>`;
+      else if (value === 1) evidenceSpan.innerHTML = `⚠️ 表现一般，继续观察。${criterion.desc}`;
+      else if (value === 2) evidenceSpan.innerHTML = `✅ 通过：表现良好。${criterion.desc}`;
+      else if (value === 3) evidenceSpan.innerHTML = `🌟 优秀：超出预期，令人安心。${criterion.desc}`;
+    }
+    updateSummary();
+  }
+
+  function updateSummary() {
+    let total = 0;
+    let redCount = 0;
+    const maxScore = criteriaData.length * 3; // 12项 × 3 = 36
+
+    criteriaData.forEach(c => {
+      const val = scores[c.id] || 0;
+      total += val;
+      if (val === 0 && c.redFlag) redCount++; // 只有标记为redFlag的条目得0分才计入红灯
+    });
+
+    document.getElementById('totalScore').textContent = total;
+    document.getElementById('maxScore').textContent = maxScore;
+    document.getElementById('redCount').textContent = redCount;
+
+    let verdict = '';
+    if (redCount >= 2 || total < 12) {
+      verdict = '🔴 高风险：强烈建议终止或立即进行严肃沟通。';
+    } else if (total >= 24 && redCount === 0) {
+      verdict = '🟢 健康区间：这段关系目前表现良好，值得继续投入。';
+    } else if (total >= 18) {
+      verdict = '🟡 观察区间：存在一些不确定因素，需要更多时间验证。';
+    } else {
+      verdict = '🟠 谨慎区间：问题信号较多，放慢节奏，不要追加投入。';
+    }
+    document.getElementById('verdictText').textContent = verdict;
+  }
+
+  function resetAllScores() {
+    scores = {};
+    document.querySelectorAll('.score-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.evidence-text').forEach(span => {
+      const criterionDiv = span.closest('.criterion');
+      if (criterionDiv) {
+        const id = criterionDiv.querySelector('.score-btn')?.dataset.criterion;
+        const criterion = criteriaData.find(c => c.id === id);
+        if (criterion) span.textContent = criterion.desc;
+      }
+    });
+    updateSummary();
+  }
+
+  // 初始化
+  buildUI();
+  window.resetAllScores = resetAllScores;
+</script>
+
+</body>
+</html>
